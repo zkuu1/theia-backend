@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  runtime  = "bun"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  image     String?  @default("https://cdn-icons-png.flaticon.com/512/149/149071.png")
+  role      String   @default("user")
+  level     Int      @default(1)
+  xp        Int      @default(0)
+  is_ban    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subscription Subscription?
+  histories    History[]
+  comments     Comment[]
+  favourites   Favourite[]
+  likes        Like[]
+}
+
+model Subscription {
+  id     String @id @default(cuid())
+  userId String @unique
+  name   String
+  status String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model History {
+  id             String   @id @default(cuid())
+  userId         String
+  animeId        String
+  episode        String
+  completed_list String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, animeId, episode])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  userId    String
+  animeId   String
+  comments  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Favourite {
+  id           String   @id @default(cuid())
+  userId       String
+  animeId      String
+  is_favourite Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, animeId])
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  animeId   String
+  is_liked  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, animeId])
+}
