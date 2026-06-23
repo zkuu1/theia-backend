@@ -21,6 +21,23 @@ export type LogoutUserRequest = {
     id: string
 }
 
+// type
+export type ToUserDataProps ={
+    user: User;
+    subscriptions?: Subscription[];
+    histories?: History[];
+    likes?: Like[];
+    comments?: Comment[];
+    favourites?: Favourite[];
+    token?: string;
+}
+
+//  base
+export type BaseData = {
+    id: string
+    createdAt: string
+    updatedAt: string
+}
 
 // data
 export type UserData = {
@@ -37,53 +54,38 @@ export type UserData = {
     createdAt: Date
     updatedAt: Date
 
-    subscription?: UserWithSubscriptionData[]
-    histories?: UserWithHistoryData[]
-    likes?: UserWithLikeData[]
-    comments?: UserWithCommentData[]
-    favourites?: UserWithFavouriteData[]
+    subscription: UserWithSubscriptionData[]
+    histories: UserWithHistoryData[]
+    likes: UserWithLikeData[]
+    comments: UserWithCommentData[]
+    favourites: UserWithFavouriteData[]
     
 }
 
-export type UserWithSubscriptionData = {
-    id: string
+export type UserWithSubscriptionData = BaseData &  {
     name: string
     status: string
-    createdAt: Date
-    updatedAt: Date
 }
 
-export type UserWithHistoryData = {
-    id: string
+export type UserWithHistoryData = BaseData & {
     animeId: string
     episode: string
     completed_list: string
-    createdAt: Date
-    updatedAt: Date
 }
 
-export type UserWithCommentData ={
-    id: string
+export type UserWithCommentData = BaseData & {
     animeId: string
     comments: string
-    createdAt: Date
-    updatedAt: Date
 }
 
-export type UserWithFavouriteData = {
-    id: string
+export type UserWithFavouriteData = BaseData & {
     animeId: string
     is_favourite: boolean
-    createdAt: Date
-    updatedAt: Date
 }
 
-export type UserWithLikeData = {
-    id: string
+export type UserWithLikeData = BaseData & {
     animeId: string
     is_liked: boolean
-    createdAt: Date
-    updatedAt: Date
 }
 
 // template response
@@ -95,15 +97,15 @@ export type ApiResponse<T, M = unknown> = {
 }
 
 // func
-export function toUserData(
-    user: User,
-    subscription: Subscription[],
-    histories: History[],
-    likes: Like[],
-    comments: Comment[],
-    favourites: Favourite[],
-    token?: string
-): userData {
+export function toUserData({
+    user,
+    subscriptions = [],
+    histories = [],
+    likes = [],
+    comments = [],
+    favourites = [],
+    token
+}: ToUserDataProps ): UserData {
     return {
         id: user.id,
         name: user.name,
@@ -115,8 +117,15 @@ export function toUserData(
         xp: user.xp,
         is_ban: user.is_ban,
         token: token,
+
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
         
-        subscription: subscription?.map(toSubscriptionData) || []
+        subscription: subscriptions.map(toSubscriptionData),
+        histories: histories.map(toHistoryData),
+        likes: likes.map(toLikeData),
+        comments: comments.map(toCommentData),
+        favourites: favourites.map(toFavouriteData)
 
     }
 }
@@ -128,8 +137,8 @@ export function toSubscriptionData(
         id: subscription.id,
         name: subscription.name,
         status: subscription.status,
-        createdAt: subscription.createdAt,
-        updatedAt: subscription.updatedAt
+        createdAt: subscription.createdAt.toISOString(),
+        updatedAt: subscription.updatedAt.toISOString()
     }
 }
 
@@ -141,8 +150,8 @@ export function toHistoryData(
         animeId: history.animeId,
         episode: history.episode,
         completed_list: history.completed_list,
-        createdAt: history.createdAt,
-        updatedAt: history.updatedAt
+        createdAt: history.createdAt.toISOString(),
+        updatedAt: history.updatedAt.toISOString()
     }
 }
 
@@ -153,8 +162,8 @@ export function toLikeData(
         id: like.id,
         animeId: like.animeId,
         is_liked: like.is_liked,
-        createdAt: like.createdAt,
-        updatedAt: like.updatedAt
+        createdAt: like.createdAt.toISOString(),
+        updatedAt: like.updatedAt.toISOString()
     }
 }
 
@@ -165,7 +174,63 @@ export function toCommentData(
         id: comment.id,
         animeId: comment.animeId,
         comments: comment.comments,
-        createdAt: comment.createdAt,
-        updatedAt: comment.updatedAt
+        createdAt: comment.createdAt.toISOString(),
+        updatedAt: comment.updatedAt.toISOString()
     }
 }
+
+export function toFavouriteData(
+    favourite: Favourite
+): UserWithFavouriteData {
+    return {
+        id: favourite.id,
+        animeId: favourite.animeId,
+        is_favourite: favourite.is_favourite,
+        createdAt: favourite.createdAt.toISOString(),
+        updatedAt: favourite.updatedAt.toISOString()
+    }
+}
+
+// response wrapper template
+export function toUserResponse(
+  user: User,
+  subscriptions: Subscription[],
+  histories: History[],
+  likes: Like[],
+  comments: Comment[],
+  favourites: Favourite[],
+  message: string,
+  token?: string
+): ApiResponse<UserData> {
+  return {
+    success: true,
+    message,
+    data: toUserData({
+      user,
+      subscriptions,
+      histories,
+      likes,
+      comments,
+      favourites,
+      token
+    })
+  };
+}
+
+export function toListUserResponse <T, U>(
+    message: string,
+    items: T[],
+    mapper: (item: T) => U,
+    total: number,
+    page: number,
+    limit: number
+) : ApiResponse <U[], PaginationMeta> {
+    return {
+       success: true,
+       message,
+       data: items.map(mapper),
+       metadata: buildPaginationMeta(page, limit, total)
+    }
+}
+
+

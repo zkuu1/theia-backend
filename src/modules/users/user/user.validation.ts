@@ -1,5 +1,5 @@
 import z from "zod"
-import { type tFunction } from "@/lib/i18n";
+import { type tFunction } from "@/libs/i18n";
 
 export class UserValidation {
 
