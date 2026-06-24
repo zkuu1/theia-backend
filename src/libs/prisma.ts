@@ -1,17 +1,21 @@
-import { PrismaClient } from "../generated/prisma/client";
+import type { Context, Next } from 'hono'
+import { PrismaClient } from '../generated/prisma/client.js'
 import { PrismaPg } from "@prisma/adapter-pg";
 
-const rawDatabaseUrl = process.env.DATABASE_URL;
-const databaseUrl = (rawDatabaseUrl ?? "").trim();
-if (!databaseUrl) {
-  throw new Error("DATABASE_URL is required");
+import * as dotenv from 'dotenv'
+dotenv.config()
+
+const databaseUrl = process.env.DATABASE_URL
+function withPrisma(c: Context, next: Next) {
+  if (!c.get('prisma')) {
+    if (!databaseUrl) {
+      throw new Error('DATABASE_URL is not set')
+    }
+    const adapter = new PrismaPg({ connectionString: databaseUrl });
+    const prisma = new PrismaClient({ adapter })
+
+    c.set('prisma', prisma)
+  }
+  return next()
 }
-
-const adapter = new PrismaPg({
-  connectionString: databaseUrl,
-});
-
-const prisma = new PrismaClient({ adapter });
-
-export { prisma };
-export default prisma;
+export default withPrisma
