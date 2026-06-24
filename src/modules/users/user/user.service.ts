@@ -6,8 +6,10 @@ import {
     type RegisterUserRequest,
     type LoginUserRequest,
     toUserResponse,
-    type toListUserResponse
+    toListUserResponse,
+    toUserData,
 } from "@/dto/users/user.dto"
+import type { PaginationMeta } from "@/dto/pagination.dto"
 
 import { HTTPException } from "hono/http-exception"
 import bcrypt from 'bcrypt'
@@ -64,10 +66,21 @@ export class UserService {
     throw error
   }
 }
-    static async getAllUser(prisma: PrismaClient) {
-        const users = await UserRepository.getAllUsers(prisma, {
-            page: 1,
-            limit: 10
-        })
+    static async getAllUsers(
+        prisma: PrismaClient,
+        page: number = 1,
+        limit: number = 10
+    ): Promise<ApiResponse<UserData[], PaginationMeta>> {
+        const users = await UserRepository.getAllUsers(prisma, { page, limit })
+        const total = users.length
+
+        return toListUserResponse(
+            "Users fetched successfully",
+            users,
+            toUserData,
+            total,
+            page,
+            limit
+        )
     }
 }
