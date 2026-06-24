@@ -14,16 +14,17 @@ model User {
   name      String?
   password  String
   image     String?  @default("https://cdn-icons-png.flaticon.com/512/149/149071.png")
-  public_id String?
+  publicId String?
   role      String   @default("user")
   level     Int      @default(1)
   xp        Int      @default(0)
-  is_ban    Boolean  @default(false)
+  isBan    Boolean  @default(false)
   token     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime?
 
-  subscription Subscription?
+  subscriptions Subscription[]
   histories    History[]
   comments     Comment[]
   favourites   Favourite[]
@@ -32,7 +33,7 @@ model User {
 
 model Subscription {
   id     String @id @default(cuid())
-  userId String @unique
+  userId String
   name   String
   status String
   createdAt DateTime @default(now())
@@ -46,7 +47,7 @@ model History {
   userId         String
   animeId        String
   episode        String
-  completed_list String
+  completedList String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -62,6 +63,7 @@ model Comment {
   comments  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -70,7 +72,7 @@ model Favourite {
   id           String   @id @default(cuid())
   userId       String
   animeId      String
-  is_favourite Boolean  @default(false)
+  isFavourite Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -83,7 +85,7 @@ model Like {
   id        String   @id @default(cuid())
   userId    String
   animeId   String
-  is_liked  Boolean  @default(false)
+  isLiked  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

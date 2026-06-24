@@ -1,102 +1,183 @@
-import {Prisma, PrismaClient } from "@/generated/prisma/client"
+import {
+  Prisma,
+  PrismaClient,
+} from "@/generated/prisma/client";
+
+
+
+const userInclude = {
+  subscriptions: true,
+  histories: true,
+  comments: true,
+  likes: true,
+  favourites: true,
+} satisfies Prisma.UserInclude;
+
+export type UserWithRelations =
+  Prisma.UserGetPayload<{
+    include: typeof userInclude;
+  }>;
+
+type UpdateUserParams = {
+  id: string;
+  data: Prisma.UserUpdateInput;
+};
+
+type GetAllUserParams = {
+  page: number;
+  limit: number;
+};
 
 export class UserRepository {
+  static findByEmail(
+    prisma: PrismaClient,
+    email: string
+  ) {
+    return prisma.user.findUnique({
+      where: {
+        email,
+        deletedAt: null,
+      },
+    });
+  }
 
-    
+  static findByEmailWithRelation(
+    prisma: PrismaClient,
+    email: string
+  ) {
+    return prisma.user.findUnique({
+      where: {
+        email,
+        deletedAt: null,
+      },
+      include: userInclude,
+    });
+  }
 
-    static findByName (prisma: PrismaClient, name: string) {
-        return prisma.user.findFirst({
-            where: {
-              name
-            },
-            include: {
-                subscription: true,
-                histories: true,
-                comments: true,
-                likes: true,
-                favourites: true,
-            }
-        })
-    }
+  static findById(
+    prisma: PrismaClient,
+    id: string
+  ) {
+    return prisma.user.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+      },
+    });
+  }
 
-    static findByEmail(prisma: PrismaClient, email: string) {
-        return prisma.user.findUnique({
-            where: {
-                email
-            },
-            include: {
-                subscription: true,
-                histories: true,
-                comments: true,
-                likes: true,
-                favourites: true,
-            }
-        })
-    }
+  static findByIdWithRelation(
+    prisma: PrismaClient,
+    id: string
+  ) {
+    return prisma.user.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+      },
+      include: userInclude,
+    });
+  }
 
-    static findById(prisma: PrismaClient, id: string) {
-        return prisma.user.findUnique({
-            where: {id},
-            include: {
-                subscription: true,
-                histories: true,
-                comments: true,
-                likes: true,
-                favourites: true,
-            }
-        })
-    }
+  static countByEmail(
+    prisma: PrismaClient,
+    email: string
+  ) {
+    return prisma.user.count({
+      where: {
+        email,
+        deletedAt: null,
+      },
+    });
+  }
 
-    static countByEmail(prisma: PrismaClient, email: string) {
-        return prisma.user.count({
-            where: {email},
-        })
-    }
+  static getAllUsers(
+    prisma: PrismaClient,
+    {
+      page,
+      limit,
+    }: GetAllUserParams
+  ) {
+    const skip = (page - 1) * limit;
 
-    static getAllUser(prisma: PrismaClient) {
-        return prisma.user.findMany({
-            include: {
-                subscription: true,
-                histories: true,
-                comments: true,
-                likes: true,
-                favourites: true,
-            }
-        })
-    }
+    return prisma.user.findMany({
+      skip,
+      take: limit,
+      where: {
+        deletedAt: null,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: userInclude,
+    });
+  }
 
-    static createUser(prisma: PrismaClient, data: Prisma.UserCreateInput) {
-        return prisma.user.create({
-            data,
-            include: {
-                subscription: true,
-                histories: true,
-                comments: true,
-                likes: true,
-                favourites: true,
-            }
-        })
-    }
+  static createUser(
+    prisma: PrismaClient,
+    data: Prisma.UserCreateInput
+  ) {
+    return prisma.user.create({
+      data,
+      include: userInclude,
+    });
+  }
 
-    static updateUser(prisma: PrismaClient, id: string, data: Prisma.UserUpdateInput) {
-        return prisma.user.update({
-            where: {id},
-            data,
-            include: {
-                subscription: true,
-                histories: true,
-                comments: true,
-                likes: true,
-                favourites: true,
-            }
-        })
-    }
+  static updateUser(
+    prisma: PrismaClient,
+    {
+      id,
+      data,
+    }: UpdateUserParams
+  ) {
+    return prisma.user.update({
+      where: {
+        id,
+      },
+      data,
+      include: userInclude,
+    });
+  }
 
-     static deleteUser(prisma: PrismaClient, id: string) {
-            return prisma.user.delete({
-                where: {id}
-            })
-        }
+  static banUser(
+    prisma: PrismaClient,
+    id: string
+  ) {
+    return prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        isBan: true,
+      },
+    });
+  }
 
+  static unbanUser(
+    prisma: PrismaClient,
+    id: string
+  ) {
+    return prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        isBan: false,
+      },
+    });
+  }
+
+  static softDeleteUser(
+    prisma: PrismaClient,
+    id: string
+  ) {
+    return prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        deletedAt: new Date(),
+      },
+    });
+  }
 }
-

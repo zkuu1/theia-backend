@@ -1,0 +1,11 @@
+{
+  "user": {
+    "created": "User berhasil dibuat",
+    "email_exists": "Email sudah digunakan",
+    "not_found": "User tidak ditemukan"
+  },
+  "auth": {
+    "invalid_credentials": "Email atau password salah",
+    "unauthorized": "Tidak memiliki akses"
+  }
+}

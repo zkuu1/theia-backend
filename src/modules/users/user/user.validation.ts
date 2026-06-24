@@ -1,43 +1,148 @@
-import z from "zod"
-import { type tFunction } from "@/libs/i18n";
+import z from "zod";
+import type { tFunction } from "@/libs/i18n";
 
 export class UserValidation {
-
-    static readonly register = (t: tFunction) => z.object({
-        name: z.string().min(1, {
-            message: t('validation.required', { field: 'Name' })
-        }).max(50, {
-            message: t('validation.max', { field: 'Name', count: 50 })
-        }),
-
-        email: z.string().min(1, {
-            message: t('validation.required', {field: 'Email'})
-        }).email({
-            message: t('validation.invalidEmail')
-        }).max(100, {
-            message: t('validation.max', { field: 'Email', count: 100})
-        }),
-
-        password: z.string().min(7, {
-            message: t('validation.min', {field: 'Password', count: 7})
-        }).max(50, {
-            message: t('validation.max', { field: 'Password', count: 50})
+  static readonly register = (
+    t: tFunction
+  ) =>
+    z.object({
+      name: z
+        .string()
+        .trim()
+        .min(1, {
+          message: t(
+            "validation.required",
+            {
+              field: t(
+                "validation.fields.name"
+              ),
+            }
+          ),
         })
-    })
-
-    static readonly login = (t: tFunction) => z.object({
-        email: z.string().min(1, {
-            message: t('validation.required', { field: 'Email'})
-        }).email({
-            message: t('validation.invalidEmail')
-        }). max(100, {
-            message: t('validation.max', {field: 'Email', count: 100 })
+        .max(50, {
+          message: t(
+            "validation.max",
+            {
+              field: t(
+                "validation.fields.name"
+              ),
+              count: 50,
+            }
+          ),
         }),
 
-        password: z.string().min(1, {
-            message: t('validation.required', { field: 'Password', count: 1})
-        }).max(50, {
-            message: t('validation.max', { field: 'Password', count: 50})
+      email: z
+        .string()
+        .trim()
+        .min(1, {
+          message: t(
+            "validation.required",
+            {
+              field: t(
+                "validation.fields.email"
+              ),
+            }
+          ),
         })
-    })
+        .max(100, {
+          message: t(
+            "validation.max",
+            {
+              field: t(
+                "validation.fields.email"
+              ),
+              count: 100,
+            }
+          ),
+        })
+        .email({
+          message: t(
+            "validation.invalidEmail"
+          ),
+        }),
+
+      password: z
+        .string()
+        .min(8, {
+          message: t(
+            "validation.min",
+            {
+              field: t(
+                "validation.fields.password"
+              ),
+              count: 8,
+            }
+          ),
+        })
+        .max(72, {
+          message: t(
+            "validation.max",
+            {
+              field: t(
+                "validation.fields.password"
+              ),
+              count: 72,
+            }
+          ),
+        }),
+    });
+
+  static readonly login = (
+    t: tFunction
+  ) =>
+    z.object({
+      email: z
+        .string()
+        .trim()
+        .min(1, {
+          message: t(
+            "validation.required",
+            {
+              field: t(
+                "validation.fields.email"
+              ),
+            }
+          ),
+        })
+        .max(100, {
+          message: t(
+            "validation.max",
+            {
+              field: t(
+                "validation.fields.email"
+              ),
+              count: 100,
+            }
+          ),
+        })
+        .email({
+          message: t(
+            "validation.invalidEmail"
+          ),
+        }),
+
+      password: z
+        .string()
+        .min(1, {
+          message: t(
+            "validation.required",
+            {
+              field: t(
+                "validation.fields.password"
+              ),
+            }
+          ),
+        })
+        .max(72, {
+          message: t(
+            "validation.max",
+            {
+              field: t(
+                "validation.fields.password"
+              ),
+              count: 72,
+            }
+          ),
+        }),
+    });
 }
