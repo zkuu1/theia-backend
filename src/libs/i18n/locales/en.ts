@@ -14,6 +14,7 @@ export default {
 
   user: {
     created: "User created successfully",
+    fetched: "User fetched successfully",
     emailExists: "Email already exists",
     notFound: "User not found",
     banned: "User has been banned",

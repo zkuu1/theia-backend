@@ -13,15 +13,20 @@ import type { PaginationMeta } from "@/dto/pagination.dto"
 
 import { HTTPException } from "hono/http-exception"
 import bcrypt from 'bcrypt'
-import { UserRepository } from "./user.repository"
+import { UserRepository, type UserWithRelations } from "./user.repository"
 
+// i18n
+import type { tFunction } from "@/libs/i18n"
+import { ONE_DAY, redis, THREE_DAY } from "@/helpers/redis"
+import { generateUserToken } from "@/helpers/jwt"
 
 
 export class UserService {
 
-    static async register(
-  prisma: PrismaClient,
-  data: RegisterUserRequest
+  static async register(
+      prisma: PrismaClient,
+      data: RegisterUserRequest,
+      t: tFunction
 ): Promise<ApiResponse<UserData>> {
   try {
     const password = await bcrypt.hash(
@@ -37,7 +42,7 @@ export class UserService {
           email: data.email,
           password,
 
-          role: "USER",
+          role: "user",
           level: 1,
           xp: 0,
           isBan: false,
@@ -46,7 +51,7 @@ export class UserService {
 
     return toUserResponse(
       user,
-      "User Created Successfully"
+      t("user.created")
     )
   } catch (error) {
     if (
@@ -57,8 +62,7 @@ export class UserService {
       throw new HTTPException(
         400,
         {
-          message:
-            "Email Already Exists"
+         message: t("user.emailExists")
         }
       )
     }
@@ -66,16 +70,92 @@ export class UserService {
     throw error
   }
 }
+
+    static async login(
+      prisma: PrismaClient,
+      data: LoginUserRequest,
+      t: tFunction
+    ): Promise<ApiResponse<UserData>> {
+
+     const user = await UserRepository.findByEmailWithRelation(prisma, data.email)
+
+      if (!user) {
+        throw new HTTPException(
+          401, {
+            message: t("auth:invalidCredentials")
+          }
+        )
+      }
+
+      const isValid = bcrypt.compare(
+        data.password,
+        user.password
+      )
+
+      if (!isValid) {
+        throw new HTTPException (
+          401, {
+            message: t("auth:invalidCredentials")
+          }
+        )
+      }
+
+      const token = generateUserToken({
+        id: user.id,
+        name: user.name as string,
+        role: user.role
+      })
+
+      await redis.set(`sessions: ${user.id}`, token, 
+        { ex: THREE_DAY}
+      )
+
+      return toUserResponse (
+        user,
+        t("auth:loginSuccess"),
+        token
+      )
+    }
+
     static async getAllUsers(
         prisma: PrismaClient,
         page: number = 1,
-        limit: number = 10
+        limit: number = 10,
+        t: tFunction
     ): Promise<ApiResponse<UserData[], PaginationMeta>> {
-        const users = await UserRepository.getAllUsers(prisma, { page, limit })
-        const total = users.length
+
+        const { users, total } =
+        await UserRepository.getAllUsers(
+            prisma,
+            { page, limit }
+        );
+
+        const cacheKey = `users:${page}:${limit}`;
+        const cached = await redis.get<{ users: UserWithRelations[], total: number }>(cacheKey);
+        
+        if (cached) {
+            return toListUserResponse(
+            t("user.fetched"),
+            cached.users,
+            toUserData,
+            cached.total,
+            page,
+            limit
+        );
+        }
+
+        await redis.set (
+            cacheKey,
+            {
+              users,
+              total
+            },
+             {ex: ONE_DAY}
+           )
+
 
         return toListUserResponse(
-            "Users fetched successfully",
+            t("user.fetched"),
             users,
             toUserData,
             total,

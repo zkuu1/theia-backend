@@ -11,6 +11,7 @@ import {
   type PaginationMeta,
   buildPaginationMeta,
 } from "../pagination.dto";
+import { toISOString } from "@/helpers/toiso";
 
 // request dto
 
@@ -105,8 +106,8 @@ export function toSubscriptionData(
     id: subscription.id,
     name: subscription.name,
     status: subscription.status,
-    createdAt: subscription.createdAt.toISOString(),
-    updatedAt: subscription.updatedAt.toISOString(),
+    createdAt: toISOString(subscription.createdAt),
+    updatedAt: toISOString(subscription.updatedAt),
   };
 }
 
@@ -118,8 +119,8 @@ export function toHistoryData(
     animeId: history.animeId,
     episode: history.episode,
     completedList: history.completedList,
-    createdAt: history.createdAt.toISOString(),
-    updatedAt: history.updatedAt.toISOString(),
+    createdAt: toISOString(history.createdAt),
+    updatedAt: toISOString(history.updatedAt),
   };
 }
 
@@ -130,8 +131,8 @@ export function toLikeData(
     id: like.id,
     animeId: like.animeId,
     isLiked: like.isLiked,
-    createdAt: like.createdAt.toISOString(),
-    updatedAt: like.updatedAt.toISOString(),
+    createdAt: toISOString(like.createdAt),
+    updatedAt: toISOString(like.updatedAt),
   };
 }
 
@@ -142,8 +143,8 @@ export function toCommentData(
     id: comment.id,
     animeId: comment.animeId,
     comments: comment.comments,
-    createdAt: comment.createdAt.toISOString(),
-    updatedAt: comment.updatedAt.toISOString(),
+    createdAt: toISOString(comment.createdAt),
+    updatedAt: toISOString(comment.updatedAt),
   };
 }
 
@@ -154,8 +155,8 @@ export function toFavouriteData(
     id: favourite.id,
     animeId: favourite.animeId,
     isFavourite: favourite.isFavourite,
-    createdAt: favourite.createdAt.toISOString(),
-    updatedAt: favourite.updatedAt.toISOString(),
+    createdAt: toISOString(favourite.createdAt),
+    updatedAt: toISOString(favourite.updatedAt),
   };
 }
 
@@ -175,8 +176,8 @@ export function toUserData(
     isBan: user.isBan,
     token,
 
-    createdAt: user.createdAt.toISOString(),
-    updatedAt: user.updatedAt.toISOString(),
+    createdAt: toISOString(user.createdAt),
+    updatedAt: toISOString(user.updatedAt),
 
     subscriptions: user.subscriptions.map(
       toSubscriptionData

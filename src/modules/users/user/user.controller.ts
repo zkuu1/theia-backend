@@ -10,25 +10,30 @@ import { requireRole } from "../../../middlewares/admin.middleware.js";
 
 import { ONE_DAY, redis } from "../../../helpers/redis.js";
 import type { AppContext } from "@/context/context.js";
+import { i18nMiddleware } from "@/middlewares/i18n.middleware.js";
 
 const userController = new Hono<AppContext>;
 
-userController.get('/user', withPrisma, async(c) => {
-    const cacheKey = "users:all"
-    const cachedData = await redis.get(cacheKey)
-    if (cachedData) {
-        c.header("x-cache", "HIT")
-        return c.json(cachedData, 200);
-    }
+userController.get(
+    "/user",
+    withPrisma,
+    i18nMiddleware,
+    async (c) => {
+        const prisma = c.get("prisma");
+        const t = c.get("t");
 
-    const prisma = c.get('prisma')
-    const page = Number(c.req.query('page') ?? 1)
-    const limit = Number(c.req.query('limit') ?? 10)
-    const response = await UserService.getAllUsers(prisma, page, limit)
-    
-    c.header("x-cache", "MISS")
-    await redis.set(cacheKey, response, { ex: ONE_DAY })
-    return c.json(response, 200)
-} )
+        const page = Number(c.req.query("page") ?? 1);
+        const limit = Number(c.req.query("limit") ?? 10);
+
+        const response = await UserService.getAllUsers(
+            prisma,
+            page,
+            limit,
+            t
+        );
+
+        return c.json(response);
+    }
+);
 
 export default userController;
