@@ -6,3 +6,5 @@ export const redis = new Redis({
 });
 
 export const ONE_DAY = 60 * 60 * 24 ;
+
+export const THREE_DAY = 60 * 60 * 24 * 3;

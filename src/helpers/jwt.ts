@@ -8,7 +8,7 @@ if (!JWT_SECRET) {
 }
 
 export interface UserJwtPayload {
-  id: number;
+  id: string;
   name: string;
   role: string;
 }

@@ -14,6 +14,7 @@ export default {
 
   user: {
     created: "ユーザーが正常に作成されました",
+    fetched: "ユーザーを取得しました",
     emailExists: "このメールアドレスは既に使用されています",
     notFound: "ユーザーが見つかりません",
     banned: "ユーザーを利用停止にしました",

@@ -91,16 +91,17 @@ export class UserRepository {
     });
   }
 
-  static getAllUsers(
-    prisma: PrismaClient,
-    {
-      page,
-      limit,
-    }: GetAllUserParams
-  ) {
-    const skip = (page - 1) * limit;
+static async getAllUsers(
+  prisma: PrismaClient,
+  {
+    page,
+    limit,
+  }: GetAllUserParams
+) {
+  const skip = (page - 1) * limit;
 
-    return prisma.user.findMany({
+  const [users, total] = await Promise.all([
+    prisma.user.findMany({
       skip,
       take: limit,
       where: {
@@ -110,8 +111,20 @@ export class UserRepository {
         createdAt: "desc",
       },
       include: userInclude,
-    });
-  }
+    }),
+
+    prisma.user.count({
+      where: {
+        deletedAt: null,
+      },
+    }),
+  ]);
+
+  return {
+    users,
+    total,
+  };
+}
 
   static createUser(
     prisma: PrismaClient,

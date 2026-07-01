@@ -14,6 +14,7 @@ export default {
 
   user: {
     created: "User berhasil dibuat",
+    fetched: "User berhasil di ambil",
     emailExists: "Email sudah digunakan",
     notFound: "User tidak ditemukan",
     banned: "User berhasil diblokir",
